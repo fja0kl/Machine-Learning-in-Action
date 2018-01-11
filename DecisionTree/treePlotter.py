@@ -80,9 +80,15 @@ def createPlot(inTree):
 
 def retrieveTree(i):
     listOfTrees = [{'no surfacing':{0:'no',1:{'flippers':{0:'no',1:'yes'}}}},
-                   {'no surfacing':{0:'no',1:{'flippers':{0:{'head':{0:'no',1:'yes'}},1:'no'}}}}]
+                   {'no surfacing':{0:'no',1:{'flippers':{0:{'head':{0:'no',1:'yes'}},1:'no'}}}},
+                   {'tearRate': {'reduced': 'no lenses', 'normal': {'astigmatric': {'yes': {
+                       'prescript': {'hyper': {'age': {'pre': 'no lenses', 'presbyopic': 'no lenses', 'young': 'hard'}},
+                                     'myope': 'hard'}}, 'no': {
+                       'age': {'pre': 'soft', 'presbyopic': {'prescript': {'hyper': 'soft', 'myope': 'no lenses'}},
+                               'young': 'soft'}}}}}}]
     return listOfTrees[i]
 
+
 if __name__ == '__main__':
-    tree = retrieveTree(1)
+    tree = retrieveTree(2)
     createPlot(tree)

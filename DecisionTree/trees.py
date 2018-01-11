@@ -2,6 +2,11 @@
 from math import log
 
 def calcShannonEnt(dataSet):
+    """
+    计算香浓熵
+    :param dataSet:数据集
+    :return: 香浓熵
+    """
     numEntries = len(dataSet)
     labelCounts = {}
     for featVec in dataSet:
@@ -14,6 +19,10 @@ def calcShannonEnt(dataSet):
     return shannonEnt
 
 def createDataSet():
+    """
+    创建数据集
+    :return:
+    """
     dataSet = [[1,1,'yes'],
                [1, 1,'yes'],
                [1,0,'no'],
@@ -21,6 +30,13 @@ def createDataSet():
                [0,1,'no']]
     labels = ['no surfacing','flippers']#特征
     return dataSet, labels
+
+def read2DataSet(filename):
+    fr = open(filename,'r')
+    dataSet = [example.strip().split('\t') for example in fr.readlines()]
+    lenseLabels = ['age','prescript','astigmatric','tearRate']
+
+    return dataSet,lenseLabels
 
 def splitDataSet(dataSet, axis, value):
     """
@@ -84,44 +100,64 @@ def createTree(dataSet, labels):
     classList = [example[-1] for example in dataSet]
     if classList.count(classList[0]) == len(classList):#结束条件1：结点中所有实例都是一个类别；
         return classList[0]
-    if len(dataSet[0]) == 1:#结束条件2：结点中，分类特征只剩下一个---多数表决
+    if len(dataSet[0]) == 1:#结束条件2：结点中没有特征，只剩下类别标签---多数表决
         return majorityCnt(classList)
     bestFeat = chooseBestFeatureToSplit(dataSet)
     bestFeatLabel = labels[bestFeat]#特征的名称，eg：工资、性别等等----中间结点，进行判断
-    myTree = {bestFeatLabel:{}}#第一次划分已经完成；对子节点进行划分
+    myTree = {bestFeatLabel:{}}#；对子节点进行划分
 
-    del labels[bestFeat]
+    del labels[bestFeat]#针对选定的特征--取不同的值，进行划分
     featValues = [example[bestFeat] for example in dataSet]
     uniqueValues = set(featValues)
     for value in uniqueValues:
         subLabels = labels[:]
         myTree[bestFeatLabel][value] = createTree(splitDataSet(dataSet,bestFeat,value),subLabels)
-
     return myTree
 
 def classify(inputTree, featLabels, testVec):
+    """
+    利用决策树分类器进行分类
+    :param inputTree: 构建的决策树分类器
+    :param featLabels: 特征名称列表
+    :param testVec: 测试样例
+    :return: 类别
+    """
     firstStr = inputTree.keys()[0]
     secondDict = inputTree[firstStr]
     featIndex = featLabels.index(firstStr)
     for key in secondDict.keys():
         if testVec[featIndex] == key:
-            if type(secondDict[key]).__name__ == 'dict':
+            if isinstance(secondDict[key], dict):
                 classLabel = classify(secondDict[key],featLabels,testVec)
             else:
                 classLabel = secondDict[key]
     return classLabel
 
 def storeTree(inputTree, filename):
+    """
+    保存模型，方便下次使用
+    :param inputTree:生成的决策树模型
+    :param filename: 保存文件的名称
+    :return:
+    """
     import pickle
     fw = open(filename,'w')
     pickle.dump(inputTree,fw)
     fw.close()
 
 def grabTree(filename):
+    """
+    读取保存文件，进行分类
+    :param filename: 模型保存的文件名
+    :return: 决策树
+    """
     import pickle
     fr = open(filename)
     return pickle.load(fr)
 
 if __name__ == '__main__':
-    tree = grabTree('classifierStorage.txt')
-    print tree
+    dataSet, labels = read2DataSet('lenses.txt')
+    label = labels[:]
+    myTree = createTree(dataSet,label)
+    predict = classify(myTree,labels,['pre','myope','no','normal'])
+    print(predict)
