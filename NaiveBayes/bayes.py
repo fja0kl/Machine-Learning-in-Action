@@ -117,8 +117,8 @@ def spamTest():
     print ("the error rate is %f" % errorRate)
     return errorRate
 if __name__ == '__main__':
-    error = zeros(100)
-    for i in range(100):
+    error = zeros(10)
+    for i in range(10):
         error[i] = spamTest()
-    print error
+    # print error
     print error.mean()
