@@ -1,6 +1,7 @@
 #coding:utf8
 from numpy import *
 import matplotlib.pyplot as plt
+
 def loadDataSet():
     dataMat = []; labelMat = []
     fr = open('testSet.txt','r')
@@ -44,11 +45,19 @@ def stocGradAscent1(dataMat, classLabels, numIter=150):
         for i in range(m):
             alpha = 4/(1.0+j+i) + 0.1
             randIndex = int(random.uniform(0,len(dataIndex)))
-            h = sigmod(sum(dataMat[randIndex]*weights))
-            error = labelMat[randIndex] - h
+            h = sigmod(sum(dataMat[randIndex]*weights)) - classLabels
+            error = classLabels[randIndex] - h
             weights = weights + alpha*error*dataMat[randIndex]
             del dataIndex[randIndex]
     return weights
+
+def classifyVector(inX, weights):
+    prob = sigmod(sum(inX*weights))
+    if prob > 0.5:
+        return 1.0
+    else:
+        return 0.0
+
 
 def plotBestFit(weights):
     dataMat, labelMat = loadDataSet()
