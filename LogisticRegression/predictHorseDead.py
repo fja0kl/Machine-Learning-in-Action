@@ -1,5 +1,6 @@
 #coding:utf8
 from numpy import *
+import time
 
 def sigmod(x):
     return 1/(1+exp(-x))
@@ -57,6 +58,48 @@ def stocGradAscent1(dataMat, classLabels, numIters=150):
             del dataIndex[randIndex]
     return weights
 
+
+def lrTrain(dataMat, classMat, ops):
+    """
+    训练分类器，得到权重系数
+    :param dataMat: 数据矩阵 mat
+    :param classMat: 类别标签矩阵 mat;;;类向量
+    :param ops: 参数选项；包括：学习率alpha，优化算法；maxIters 迭代次数
+    :return:权重系数 weights
+    """
+    startTime = time.time()
+
+    numExamples,numFeatures = shape(dataMat)
+    weights = ones((numFeatures,1))
+    alpha = ops['alpha']; maxIters = ops['maxIters']; optimization = ops['optimization']
+
+    for i in range(maxIters):
+        if optimization == 'gradAscent':
+            dataMat = mat(dataMat)
+            classMat = mat(classMat)
+
+            h = sigmod(dataMat * weights)
+            error = classMat - h
+            weights = weights + alpha*dataMat.transpose()*error
+        elif optimization == 'stocGradAscent0':
+            for j in range(numExamples):
+                h = sigmod(sum(dataMat[j,:]*weights))
+                error = classMat[j] - h
+                weights = weights + alpha*dataMat[j,:].transpose()*error
+        elif optimization == 'stocGradAscent1':
+            dataIndex = range(numExamples)
+            for j in range(numExamples):
+                alpha = 4/(i+j+1.0) +1.0
+                randIndex = int(random.uniform(0,len(dataIndex)))
+                h = sigmod(sum(dataMat[randIndex]*weights))
+                error = classMat[randIndex] - h
+                weights = weights + alpha*dataMat[randIndex,:].transpose()*error
+                del (dataIndex[randIndex])
+        else:
+            raise NameError('Sorry！优化算法不支持!')#抛异常
+    print ("训练结束，运行时间为%fs" %(time.time() - startTime))
+    return weights
+
 def classifyVector(inX, weights):
     prob = sigmod(sum(inX*weights))
     if prob > 0.5:
@@ -75,7 +118,9 @@ def colicTest():
             lineArr.append(float(line[i]))
         trainSet.append(lineArr)
         trainLabels.append(float(line[21]))
-    trainWeights = stocGradAscent1(array(trainSet),trainLabels)
+    ops = {'alpha':0.01,'maxIters':150,'optimization':'stocGradAscent1'}
+    trainWeights = lrTrain(array(trainSet),array(trainLabels).transpose(),ops)
+    # trainWeights = stocGradAscent1(array(trainSet),trainLabels)
     errorCnt = 0; numTestVec = 0.0
     for line in frTest.readlines():
         numTestVec += 1
@@ -90,7 +135,7 @@ def colicTest():
     return errorRate
 
 def multiTest():
-    numTests = 100; errorSum = 0.0
+    numTests = 10; errorSum = 0.0
     for k in range(numTests):
         errorSum += colicTest()
     print ("after %d iterations the average error rate is: %f" %(numTests, float(errorSum)/numTests))
