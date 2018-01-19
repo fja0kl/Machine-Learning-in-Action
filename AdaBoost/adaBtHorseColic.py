@@ -14,6 +14,15 @@ def loadDataSet(filename):
         labelMat.append(float(lineArr[-1]))
     return dataMat, labelMat
 
+def stumpClassify(dataMat, dimen, threshVal,threshIneq):
+    m, _ = shape(dataMat)
+    predLabels = ones((m, 1))
+    if threshIneq == 'lt':
+        predLabels[dataMat[:,dimen] <= threshVal] = -1.0
+    else:
+        predLabels[dataMat[:,dimen] > threshVal] = -1.0
+    return predLabels
+
 def buildStump(dataArr,classLables, D):
     """
     构建弱分类器：决策树类型；树桩
@@ -23,5 +32,70 @@ def buildStump(dataArr,classLables, D):
     :return: 决策树；误差；预测结果
     """
     dataMat = mat(dataArr); classMat = mat(classLables).transpose()
-    n = shape(dataMat)[1]
-    bestIndex = 0; bestStump={}; minError = inf;
+    m,n = shape(dataMat)
+    numSteps = 10; bestStump={}; bestClasEst = mat(zeros((m,1)))
+    minError = inf
+    for i in range(n):
+        rangeMin = dataMat[:,i].min(); rangeMax = dataMat[:,i].max()
+        stepSize = (rangeMax - rangeMin)/float(numSteps)
+        for j in range(-1, int(numSteps+1)):
+            for ineq in ['lt','gt']:
+                threshVal = rangeMin + j*stepSize
+                predLabels = stumpClassify(dataMat,i,threshVal,ineq)
+                errArr = mat(zeros((m,1)))
+                errArr[predLabels != classMat] = 1
+                weightError = D.T*errArr
+
+                if weightError < minError:
+                    minError = weightError
+                    bestStump['dim'] = i
+                    bestStump['thresh'] = threshVal
+                    bestStump['ineq'] = ineq
+                    bestClasEst = predLabels.copy()
+    return bestStump,bestClasEst,minError
+
+def adaBoostTrainDS(dataArr,classLabels, numIters=50):
+    weakClfArr = []
+    m = shape(dataArr)[0]
+    D = mat(ones((m,1))/m)
+    aggClassEst = mat(zeros((m,1)))
+    for i in range(numIters):
+        bestStump,classEst,error = buildStump(dataArr,classLabels,D)
+        alpha = float(0.5*log((1-error)/max(error,1e-16)))
+        bestStump['alpha'] = alpha
+        weakClfArr.append(bestStump)
+
+        expon = multiply(-1*alpha*mat(classLabels).T,classEst)
+
+        D = multiply(D,exp(expon))#对权重系数向量进行更新
+        D = D/D.sum()
+
+        aggClassEst += alpha*classEst
+        aggError = multiply(sign(aggClassEst) != mat(classLabels).T,ones((m,1)))
+        errorRate = aggError.sum()/m#错误率：误分的个数/全部样例个数
+
+        if errorRate == 0.0:
+            break
+    return weakClfArr
+
+def adaClassify(datToClass, classifierArr):
+    dataMatrix = mat(datToClass)
+    m = shape(dataMatrix)[0]
+    aggClassEst = mat(zeros((m,1)))
+    for i in range(len(classifierArr)):
+        classEst = stumpClassify(dataMatrix,\
+                                 classifierArr[i]['dim'],\
+                                 classifierArr[i]['thresh'],\
+                                 classifierArr[i]['ineq'])
+        aggClassEst += classifierArr[i]['alpha']*classEst
+    return sign(aggClassEst)
+
+if __name__ == '__main__':
+    dataMat, labelMat = loadDataSet('horseColicTraining2.txt')
+    weakClfArr = adaBoostTrainDS(dataMat,labelMat,100)
+    testDataMat, testLabelMat = loadDataSet('horseColicTraining2.txt')
+    pred = adaClassify(testDataMat,weakClfArr)
+    result = multiply(pred != mat(testLabelMat).T,ones(shape(testLabelMat)))
+    print result.sum()/float(len(testLabelMat))
+
+

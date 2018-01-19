@@ -37,7 +37,7 @@ def buildStump(dataArr, classLabels,D):
     :param D: 权重向量【每个记录有一个权重】
     :return: 决策树，最小误差，预测的分类结果
     """
-    dataMatrix = mat(dataArr); labelMat = mat(classLabels).T
+    dataMatrix = mat(dataArr); labelMat = mat(classLabels).transpose()
     m,n = shape(dataMatrix)
     numSteps = 10.0; bestStump = {}; bestClasEst = mat(zeros((m,1)))
     #numStep 迭代次数；用来设定分类时特征阈值
