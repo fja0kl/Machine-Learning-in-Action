@@ -76,7 +76,7 @@ def adaBoostTrainDS(dataArr,classLabels, numIters=50):
 
         if errorRate == 0.0:
             break
-    return weakClfArr
+    return weakClfArr,aggClassEst
 
 def adaClassify(datToClass, classifierArr):
     dataMatrix = mat(datToClass)
@@ -90,12 +90,41 @@ def adaClassify(datToClass, classifierArr):
         aggClassEst += classifierArr[i]['alpha']*classEst
     return sign(aggClassEst)
 
+def plotROC(predStrengths, classLabels):
+    import matplotlib.pyplot as plt
+    cur = (1.0, 1.0)
+    ySum = 0.0
+    numPosClas = sum(array(classLabels)==1.0)
+    yStep = 1/float(numPosClas)#TP
+    xStep = 1/float(len(classLabels)-numPosClas)#FP
+
+    print predStrengths
+    sortedIndicies = predStrengths.argsort()
+    print sortedIndicies
+    fig = plt.figure()
+    fig.clf()
+    ax = plt.subplot(111)
+    for index in sortedIndicies.tolist()[0]:
+        if classLabels[index] == 1.0:
+            delX = 0; delY = yStep
+        else:
+            delX = xStep; delY = 0;
+            ySum += cur[1]
+        ax.plot([cur[0],cur[0]-delX],[cur[1],cur[1]-delY], c='b')
+        cur = (cur[0]-delX,cur[1]-delY)
+    ax.plot([0,1],[0,1],'b--')
+    plt.xlabel('False Positive Rate'); plt.ylabel('True Positive Rate')
+    plt.title('ROC curve for AdaBoost Horse Colic Detection System')
+    ax.axis([0,1,0,1])
+    plt.show()
+    print ("the Area Under the Curve is: %f" % float(ySum*xStep))
+
 if __name__ == '__main__':
     dataMat, labelMat = loadDataSet('horseColicTraining2.txt')
-    weakClfArr = adaBoostTrainDS(dataMat,labelMat,100)
-    testDataMat, testLabelMat = loadDataSet('horseColicTraining2.txt')
+    weakClfArr,aggClassEst = adaBoostTrainDS(dataMat,labelMat,100)
+    testDataMat, testLabelMat = loadDataSet('horseColicTest2.txt')
     pred = adaClassify(testDataMat,weakClfArr)
     result = multiply(pred != mat(testLabelMat).T,ones(shape(testLabelMat)))
     print result.sum()/float(len(testLabelMat))
-
+    plotROC(aggClassEst.T,labelMat)
 
