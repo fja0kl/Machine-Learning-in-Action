@@ -92,39 +92,44 @@ def adaClassify(datToClass, classifierArr):
 
 def plotROC(predStrengths, classLabels):
     import matplotlib.pyplot as plt
-    cur = (1.0, 1.0)
+    cur = (1.0, 1.0)#起点
     ySum = 0.0
-    numPosClas = sum(array(classLabels)==1.0)
-    yStep = 1/float(numPosClas)#TP
-    xStep = 1/float(len(classLabels)-numPosClas)#FP
+    numPosClas = sum(array(classLabels)==1.0)#正类数目
+    yStep = 1/float(numPosClas)#TPR单维刻度
+    xStep = 1/float(len(classLabels)-numPosClas)#FPR单维刻度
 
-    print predStrengths
-    sortedIndicies = predStrengths.argsort()
-    print sortedIndicies
+    # print predStrengths
+    sortedIndicies = predStrengths.argsort()#对预测结果的得分进行升序排序
+    print type(sortedIndicies)
+    #绘图
     fig = plt.figure()
     fig.clf()
     ax = plt.subplot(111)
-    for index in sortedIndicies.tolist()[0]:
-        if classLabels[index] == 1.0:
+
+    print shape(sortedIndicies.tolist())#matrix to list : 多维的
+
+    for index in sortedIndicies.tolist()[0]:#【0】：列表
+        if classLabels[index] == 1.0:#真 正类：TPR情况
             delX = 0; delY = yStep
         else:
-            delX = xStep; delY = 0;
+            delX = xStep; delY = 0
             ySum += cur[1]
-        ax.plot([cur[0],cur[0]-delX],[cur[1],cur[1]-delY], c='b')
-        cur = (cur[0]-delX,cur[1]-delY)
-    ax.plot([0,1],[0,1],'b--')
-    plt.xlabel('False Positive Rate'); plt.ylabel('True Positive Rate')
-    plt.title('ROC curve for AdaBoost Horse Colic Detection System')
-    ax.axis([0,1,0,1])
-    plt.show()
-    print ("the Area Under the Curve is: %f" % float(ySum*xStep))
+        ax.plot([cur[0],cur[0]-delX],[cur[1],cur[1]-delY], c='b')#画点：从（1,1）开始
+        cur = (cur[0]-delX,cur[1]-delY)#变换当前点
+    ax.plot([0,1],[0,1],'c--')#对角线：（0,0）到（1,1）；；一条虚线--dashed
+    plt.xlabel('False Positive Rate'); plt.ylabel('True Positive Rate')#轴标签
+    plt.title('ROC curve for AdaBoost Horse Colic Detection System')#图标签
+    ax.axis([0,1,0,1])#x轴、y轴刻度范围
+    plt.show()#图显示
+    print ("the Area Under the Curve is: %f" % float(ySum*xStep))#AUC：ROC曲线下的面积；；；计算方法，像微积分
 
 if __name__ == '__main__':
     dataMat, labelMat = loadDataSet('horseColicTraining2.txt')
     weakClfArr,aggClassEst = adaBoostTrainDS(dataMat,labelMat,100)
-    testDataMat, testLabelMat = loadDataSet('horseColicTest2.txt')
-    pred = adaClassify(testDataMat,weakClfArr)
-    result = multiply(pred != mat(testLabelMat).T,ones(shape(testLabelMat)))
-    print result.sum()/float(len(testLabelMat))
+    # testDataMat, testLabelMat = loadDataSet('horseColicTest2.txt')
+    # weakClfArr, aggClassEst = adaBoostTrainDS(testDataMat, testLabelMat, 100)
+    # pred = adaClassify(testDataMat,weakClfArr)
+    # result = multiply(pred != mat(testLabelMat).T,ones(shape(testLabelMat)))
+    # print result.sum()/float(len(testLabelMat))
     plotROC(aggClassEst.T,labelMat)
 
