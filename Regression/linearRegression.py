@@ -151,8 +151,6 @@ def stageWise(xArr,yArr,eps=0.005,numIt=1000):
     return returnMat
 
 
-
-
 if __name__ == '__main__':
 
     xArr, yArr = loadDataSet('abalone.txt')
