@@ -71,7 +71,6 @@ def crossValidation(xArr, yArr, numVal=10):
     print ("with constant term: %d" % -1*sum(np.multiply(meanX,unReg)) + np.mean(yMat))
 
 
-
 if __name__ == '__main__':
     lgX = []; lgY=[]
     setDataCollect(lgX,lgY)
