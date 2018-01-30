@@ -1,6 +1,7 @@
 #coding:utf8
 import matplotlib.pyplot as plt
 import numpy as np
+import random
 
 def loadDataSet(filename):
     dataMat = []
@@ -133,7 +134,7 @@ def ridgeTest(xArr,yArr,numTestPts = 30):
     在一组lam上测试结果，find the best lambda
     :param xArr: 输入数据数组
     :param yArr: 标签数组，行方向
-    :param numTestPts: 迭代次数
+    :param numTestPts: 迭代次数,用来控制不同的步长；lambda
     :return: 不同lam上求得回归系数ws矩阵
     """
     xMat = np.mat(xArr); yMat = np.mat(yArr).T
@@ -151,6 +152,8 @@ def ridgeTest(xArr,yArr,numTestPts = 30):
     return wMat
 
 # 前向逐步回归，与lasso算法得到的效果差不多，但是更加简单
+# 最终,只是针对一个特征的回归系数进行了修改，并不是全部的；
+# 即：是通过对全部特征对应的权重系数，进行增加或减少，寻找最好的权重系数---只有一个特征对应的权重系数不为0；其余都是0
 def stageWise(xArr,yArr,eps=0.005,numIt=100):
     xMat = np.mat(xArr)
     yMat = np.mat(yArr).T
@@ -170,12 +173,58 @@ def stageWise(xArr,yArr,eps=0.005,numIt=100):
                 wsTest[j] += eps*sign
                 yTest = xMat * wsTest
                 rssE = rssError(yMat.A, yTest.A)#新W下的误差
-                if rssE < lowestError: #误差判断？
+                if rssE < lowestError: #误差判断？ 对当前特征，找到最好的权重系数
                     lowestError = rssE
                     wsMax = wsTest #当前特征下，增大or缩小改变情况；最优解
-        ws = wsMax.copy()
+        ws = wsMax.copy() #当前迭代的回归系数结果。
         returnMat[i, :] = ws.T
     return returnMat
+# 交叉验证
+def crossValidation(xArr, yArr, numVal=10):
+    """
+    通过交叉验证，寻找最好的参数设置；
+    十折交叉验证
+    :param xArr:
+    :param yArr:
+    :param numVal:
+    :return:
+    """
+    m = len(yArr)
+    indexList = range(m)
+    errorMat = np.zeros((numVal,30))
+    for i in range(numVal):
+        # 划分训练集和测试集 比例 9：1
+        trainX = [] ;trainY = []
+        testX = []; testY = []
+        random.shuffle(indexList)
+        for j in range(m):
+            if j < m*0.9:
+                trainX.append(xArr[indexList[j]])
+                trainY.append(yArr[indexList[j]])
+            else:
+                testX.append(xArr[indexList[j]])
+                testY.append(yArr[indexList[j]])
+        wMat = ridgeTest(trainX,trainY) # 岭回归
+        for k in range(30):# 岭回归，重复30次
+            matTestX = np.mat(testX); matTrainX = np.mat(trainX)
+            meanTrain = np.mean(matTrainX,0)
+            varTrain = np.var(matTrainX,0)
+            matTestX = (matTestX-meanTrain)/varTrain # 标准化
+            yEst = matTestX * np.mat(wMat[k,:]).T + np.mean(trainY) #回复到和标签trainY的范围内，即去标准化。
+            errorMat[i,k] = rssError(yEst.T.A,np.array(testY))
+    meanError = np.mean(errorMat,0) # 针对不同步长lambda的numIter次循环结果取平均；
+    print np.shape(errorMat) # 10 * 30
+    minMean = float(min(meanError)) # 找最小的
+    bestWeights = wMat[np.nonzero(meanError == minMean)] #在最后一次循环结果上取回归系数；确定步长是主要问题；
+    print np.shape(wMat) # 30 * 8
+    print bestWeights
+    print bestWeights == wMat[22]
+    xMat = np.mat(xArr); yMat = np.mat(yArr).T
+    meanX = np.mean(xMat,0); varX = np.mean(xMat,0)
+    unReg = bestWeights/varX
+    print ("the best model from Ridge Regression is:\n" + str(unReg))
+    print ("with constant term:")
+    print (-1*sum(np.multiply(meanX,unReg)) + np.mean(yMat))
 
 def originDataPlot():
     xArr, yArr = loadDataSet('ex0.txt')
@@ -230,14 +279,16 @@ def lwlrTestPlot():
     ax.scatter(xMat[:, 1].flatten().A, np.mat(yArr).A, s=2, c='red')
     plt.show()
 
-
 def stageWiseTestPlot():
     xArr, yArr = loadDataSet('abalone.txt')
-    ws = stageWise(xArr, yArr, 0.001, 5000)
+    ws = stageWise(xArr, yArr, 0.001, 2)
     plt.plot(ws)
     plt.show()
 
+
+
 if __name__ == '__main__':
-    stageWiseTestPlot()
+    xArr, yArr = loadDataSet('abalone.txt')
+    crossValidation(xArr,yArr)
 
 
