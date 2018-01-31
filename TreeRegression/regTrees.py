@@ -36,6 +36,43 @@ def regErr(dataSet):
     # 总方差作为误差
     return var(dataSet[:, -1]) * shape(dataSet)[0]
 
+def linearSolve(dataSet):
+	"""
+	将数据集化成目标变量Y 和 自变量 X
+	:param dataSet: 
+	:return: X,Y,ws 线性模型
+	"""
+	m,n = shape(dataSet)
+	X = mat(ones((m, n)))
+	Y = mat(ones((m, 1)))
+	X[:,1:n] = dataSet[:,0:n-1]; Y = dataSet[:,-1]
+	xTx = X.T * X
+	if linalg.det(xTx) == 0.0:
+		raise NameError('This matrix is singular, cannot do inverse\n'
+						'try increasing the second value of ops')
+	ws = xTx.I * (X.T * Y)
+	return ws, X, Y
+
+def modelLeaf(dataSet):
+	"""
+	生成叶节点的模型；分段函数
+	:param dataSet: 
+	:return: 回归系数
+	"""
+	ws, X, Y = linearSolve(dataSet)
+	return ws
+
+def modelErr(dataSet):
+	"""
+	误差计算函数；分段模型；；；模型树的误差计算函数--每个叶子节点是一个线性函数；
+	:param dataSet: 
+	:return: 误差--平方误差和；
+	"""
+	ws, X, Y = linearSolve(dataSet)
+	yHat = X*ws
+	return sum(power(yHat-Y,2))
+
+
 def chooseBestSplit(dataSet, leafType=regLeaf, errorType=regErr, ops=(1,4)):
 	"""
 	选择合适的数据的最佳二元切分方法，当chooseBestSplit函数确定不再对数据进行切分时，生成叶子节点；
@@ -142,13 +179,23 @@ def prune(tree, testData):
 	else:
 		return tree
 
-if __name__ == '__main__':
+
+def testTreeReg():
 	myDat2 = loadDataSet('ex2.txt')
 	print ('树回归')
 	myMat = mat(myDat2)
-	tree = createTree(myMat,ops=(1000,4))
+	tree = createTree(myMat, ops=(1000, 4))
 	print (tree)
 	myTestData = loadDataSet('ex2test.txt')
 	myMat2Test = mat(myTestData)
 	pruneTree = prune(tree, myMat2Test)
 	print (pruneTree)
+
+def testModelTree():
+	myDat = loadDataSet('exp2.txt')
+	myMat = mat(myDat)
+	tree = createTree(myMat,leafType=modelLeaf, errorType=modelErr,ops=(1,10))
+	print (tree)
+
+if __name__ == '__main__':
+	testModelTree()
