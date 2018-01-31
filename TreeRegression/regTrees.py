@@ -179,6 +179,61 @@ def prune(tree, testData):
 	else:
 		return tree
 
+def regTreeEVal(model, inDat):
+	"""
+	点回归树，返回浮点数
+	:param model: 
+	:param inDat: 单个数据点，一个行向量；
+	:return: 一个浮点数
+	"""
+	return float(model)
+
+def modelTreeEval(model, inDat):
+	"""
+	模型树回归预测；
+	:param model: 
+	:param inDat:单个数据点， 行向量 
+	:return: 浮点数值
+	"""
+	n = shape(inDat)[1]
+	X = mat(ones((1, n+1)))
+	X[:, 1:n+1] = inDat # 格式化，第一列为1
+	return float(X * model)
+
+def treeForeCast(tree, inData, modelEval=regTreeEVal):
+	"""
+	自顶向下遍历整棵树，直到命中 叶子节点为止；调用modelEval函数，进行预测；
+	:param tree: 
+	:param inData: 
+	:param modelEval: 预测函数
+	:return: 
+	"""
+	if not isTree(tree): # 叶子节点
+		return modelEval(tree, inData)
+	if inData[tree['spInd']] > tree['spVal']: # 寻找子树中的叶子节点；找到进行评估，预测；
+		if isTree(tree['left']):
+			return treeForeCast(tree['left'], inData, modelEval)
+		else:
+			return modelEval(tree['left'], inData)
+	else:
+		if isTree(tree['right']):
+			return treeForeCast(tree['right'],inData, modelEval)
+		else:
+			return modelEval(tree['right'], inData)
+
+def createForeCast(tree, testData, modelEval=regTreeEVal):
+	"""
+	在整个测试集上进行评估，预测；
+	:param tree: 回归树模型；
+	:param testData: 测试集
+	:param modelEval: 评估函数
+	:return: 测试集上的评估值向量；
+	"""
+	m = len(testData)
+	yHat = mat(zeros((m, 1)))
+	for i in range(m):
+		yHat[i, 0] = treeForeCast(tree, mat(testData[i]), modelEval)
+	return yHat
 
 def testTreeReg():
 	myDat2 = loadDataSet('ex2.txt')
@@ -191,6 +246,24 @@ def testTreeReg():
 	pruneTree = prune(tree, myMat2Test)
 	print (pruneTree)
 
+def testTreeEval():
+	"""
+	通过计算预测结果与标签值之间的相关系数，来评价模型的好坏；
+	:return: 
+	"""
+	trainMat = mat(loadDataSet('bikeSpeedVsIq_train.txt'))
+	testMat = mat(loadDataSet('bikeSpeedVsIq_test.txt'))
+	myTree = createTree(trainMat, ops=(1,20))
+	yHat = createForeCast(myTree, testMat[:,0])
+	cor = corrcoef(yHat, testMat[:, 1],rowvar=0)[0,1]
+	print cor
+
+	modelTree = createTree(trainMat, leafType=modelLeaf, errorType=modelErr, ops=(1,20))
+	yHat_model = createForeCast(modelTree, testMat[:,0],modelTreeEval)
+	modelCorr = corrcoef(yHat_model, testMat[:,1],rowvar=0)[0,1]
+	print modelCorr
+
+
 def testModelTree():
 	myDat = loadDataSet('exp2.txt')
 	myMat = mat(myDat)
@@ -198,4 +271,4 @@ def testModelTree():
 	print (tree)
 
 if __name__ == '__main__':
-	testModelTree()
+	testTreeEval()
