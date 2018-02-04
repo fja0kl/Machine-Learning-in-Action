@@ -5,7 +5,7 @@
 2. 给予求解的频繁项集挖掘满足最小置信度的关联规则。
 """
 def loadDataSet():
-	return [[1,3,4],[2,3,5],[1,2,3,5],[2,5]]
+	return [[1,3,4,6],[2,3,5,6],[1,2,3,5,6],[2,5,1,6]]
 
 def createC1(dataSet):
 	"""
@@ -100,6 +100,70 @@ def apriori(dataSet, minSupport=0.5):
 		k += 1
 	return L, supportData # 最后的项集一定有一项元素为 空[]
 
+def generateRules(L, supportData, minConf=0.7):
+	"""
+	生成关联规则
+	:param L: 频繁项集；
+	:param supportData:包含频繁项集支持度的字典； 
+	:param minConf: 最小置信度
+	:return: 包含可信度的关联规则列表；
+	"""
+	bigRulesList = []
+	for i in range(1, len(L)): # 过滤掉1频繁项集；
+		for freqSet in L[i]:
+			H1 = [frozenset([item]) for item in freqSet] # 频繁项集的单个元素列表；
+			if (i > 1):
+				rulesFromConseq(freqSet, H1, supportData, bigRulesList, minConf)
+			else: # i = 1；频繁二项集；直接计算置信度；
+				calcConf(freqSet, H1, supportData, bigRulesList, minConf)
+	return bigRulesList
+
+def calcConf(freqSet, H, supportData, brl, minConf=0.7):
+	"""
+	对候选规则进行评估，筛选满足最小置信度的规则；
+	:param freqSet: 一个频繁项集的元素；
+	:param H: 频繁项集的单个元素列表；
+	:param supportData: 频繁项集支持度字典
+	:param brl: 满足条件的关联规则
+	:param minConf: 最小置信度；
+	:return: 
+	"""
+	prunedH = [] # 可以出现在关联规则右边的元素列表；
+	for conseq in H: # 频繁项集中的单个元素；
+		# 列举所有可能的关联规则，计算其置信度；
+		# (freqSet-conseq) --> conseq;   freqSet:频繁项集（全集），我们依据频繁项集
+		# 来列举出所有可能的关联规则，计算置信度，从而确定真正的满足条件的关联规则；
+		conf = supportData[freqSet]/supportData[freqSet-conseq]
+		if conf >= minConf:
+			print freqSet-conseq,'-->',conseq,'conf:',conf
+			brl.append((freqSet-conseq, conseq, conf)) # brl满足条件的关联规则列表；
+			prunedH.append(conseq)
+	return prunedH
+
+def rulesFromConseq(freqSet, H, supportData, brl, minConf=0.7):
+	"""
+	生成候选规则集合
+	:param freqSet:频繁项集； 
+	:param H: 可以出现在规则右部的元素列表；
+	:param supportData: 支持度
+	:param brl: 通过检查的bigRulesList
+	:param minConf: 最小置信度；
+	:return: 
+	"""
+	m = len(H[0])
+	if (len(freqSet) > (m+1)): # 判断当前频繁项集能否移除 大小为m的 子集；
+		Hmp1 = aprioriGen(H, m+1) # 由当前频繁项集单元素列表，生成所有的2元素列表（可能出现在规则右边）；
+		Hmp1 = calcConf(freqSet, Hmp1, supportData, brl, minConf)
+		# 筛选后，满足条件的可以出现在规则右边的 元素列表；
+		# 通过下面的筛选，实现：
+		# 如果某条规则并不满足最小可信度要求，那么该规则的所有子集也不会满足最小可信度要求；
+		# 我们以右边的结论为关注点；其满足条件的关联规则的子集的生成过程，
+		# 就是以当前筛选过的满足条件的关联规则的右边为基础，生成高一层的子集；不断递归实现；
+		# 这样，可以只计算：
+		# 满足最小可信度要求的，所有子集也满足最小置信度；从而，生成所有的关联规则；
+		# yeah
+		if (len(Hmp1)>1): # 满足条件的规则 多余一条；判断是否可以再次组合；
+			rulesFromConseq(freqSet, Hmp1, supportData, brl, minConf)
 
 if __name__ == '__main__':
 	dataSet = loadDataSet()
@@ -109,4 +173,7 @@ if __name__ == '__main__':
 	print retList
 	print ("#"*64)
 	print supportData
+	rules = generateRules(retList, supportData, minConf=0.5)
+	print ('#'*64)
+	print rules
 
