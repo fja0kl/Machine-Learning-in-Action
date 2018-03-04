@@ -256,12 +256,12 @@ def testTreeEval():
 	myTree = createTree(trainMat, ops=(1,20))
 	yHat = createForeCast(myTree, testMat[:,0])
 	cor = corrcoef(yHat, testMat[:, 1],rowvar=0)[0,1]
-	print cor
+	print (cor)
 
 	modelTree = createTree(trainMat, leafType=modelLeaf, errorType=modelErr, ops=(1,20))
 	yHat_model = createForeCast(modelTree, testMat[:,0],modelTreeEval)
 	modelCorr = corrcoef(yHat_model, testMat[:,1],rowvar=0)[0,1]
-	print modelCorr
+	print (modelCorr)
 
 
 def testModelTree():
