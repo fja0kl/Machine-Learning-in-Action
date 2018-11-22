@@ -76,6 +76,35 @@ def chooseBestFeatureToSplit(dataSet):
             bestFeature = i
     return bestFeature
 
+def chooseBestFeatByGainInfoRadio(dataset):
+    """
+    选择最好的特征对数据集进行划分,信息增益比率
+    :param dataSet: 训练数据集
+    :return: 选择的数据特征下标
+    """
+    numFeatures = len(dataset[0]) - 1#dataSet 数据格式：每一行最后为类标签
+    baseEntropy = calcShannonEnt(dataset)
+    bestInfoGainRatio = -1; bestFeature = -1
+
+    for i in range(numFeatures):
+        featList = [example[i] for example in dataset]
+        uniqueVals = set(featList)
+        newEntropy = 0.0
+        featEntropy = 0.0 #计算划分特征的信息熵
+        for value in uniqueVals:
+            subDataSet = splitDataSet(dataset,i, value)
+            prob = len(subDataSet)/float(len(dataset))
+            featEntropy -= prob * log(prob, 2)
+            newEntropy += prob*calcShannonEnt(dataset)#加权
+
+        infoGainRatio = baseEntropy - newEntropy
+        infoGainRatio /= featEntropy
+
+        if (infoGainRatio > bestInfoGainRatio):
+            bestInfoGainRatio = infoGainRatio
+            bestFeature = i
+    return bestFeature
+
 def majorityCnt(classList):
     """
     生成决策树的停止条件：1.遍历完所有的属性；2.每个分支下所有实例都属于同一分类。
@@ -89,7 +118,7 @@ def majorityCnt(classList):
     sortedClassCount = sorted(classCnt.items(),key=lambda a:a[1],reverse=True)
     return sortedClassCount[0][0]
 
-def createTree(dataSet, labels):
+def createTree(dataSet, labels, splitMethod='gaininfo'):
     """
     创建决策树
     :param dataSet:数据集
@@ -100,8 +129,13 @@ def createTree(dataSet, labels):
     if classList.count(classList[0]) == len(classList):#结束条件1：结点中所有实例都是一个类别；
         return classList[0]
     if len(dataSet[0]) == 1:#结束条件2：结点中没有特征，只剩下类别标签---多数表决
-        return majorityCnt(classList)
-    bestFeat = chooseBestFeatureToSplit(dataSet)
+        return majorityCnt(classList)    
+
+    if splitMethod == 'gaininfo':
+        bestFeat = chooseBestFeatureToSplit(dataSet)
+    else:
+        bestFeat = chooseBestFeatByGainInfoRadio(dataSet)
+    print(bestFeat)
     bestFeatLabel = labels[bestFeat]#特征的名称，eg：工资、性别等等----中间结点，进行判断
     myTree = {bestFeatLabel:{}}#；对子节点进行划分
 
@@ -124,6 +158,7 @@ def classify(inputTree, featLabels, testVec):
     firstStr = list(inputTree.keys())[0]
     secondDict = inputTree[firstStr]
     featIndex = featLabels.index(firstStr)
+    classLabel = ""
     for key in secondDict.keys():
         if testVec[featIndex] == key:
             if isinstance(secondDict[key], dict):
@@ -157,7 +192,7 @@ def grabTree(filename):
 if __name__ == '__main__':
     dataSet, labels = read2DataSet("./lenses.txt")
     label = labels[:]
-    myTree = createTree(dataSet,label)
+    myTree = createTree(dataSet,label,'gaininforadio')
     predict = classify(myTree,labels,['pre','myope','no','normal'])
     print(myTree)
     print(predict)
