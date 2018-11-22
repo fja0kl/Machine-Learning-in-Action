@@ -20,7 +20,7 @@ def createPlot():
 
 def getNumLeafs(myTree):
     numLeafs = 0
-    firstStr = myTree.keys()[0]
+    firstStr = list(myTree.keys())[0]
     secondDict = myTree[firstStr]
     for key in secondDict.keys():
         if type(secondDict[key]).__name__ == 'dict':
@@ -31,7 +31,7 @@ def getNumLeafs(myTree):
 
 def getTreeDepth(myTree):
     maxDepth = 0
-    firstStr = myTree.keys()[0]
+    firstStr = list(myTree.keys())[0]
     secondDict = myTree[firstStr]
     for key in secondDict.keys():
         if type(secondDict[key]).__name__ == 'dict':
@@ -50,7 +50,7 @@ def plotMidText(cntrPt,parentPt,txtString):
 def plotTree(myTree, parentPt,nodeTxt):
     numLeafs = getNumLeafs(myTree)
     depth = getTreeDepth(myTree)
-    firstStr = myTree.keys()[0]
+    firstStr = list(myTree.keys())[0]
     cntrPt = (plotTree.xOff + (1.0 + float(numLeafs))/2.0/plotTree.totalW,\
                                plotTree.yOff)
     plotMidText(cntrPt, parentPt, nodeTxt)

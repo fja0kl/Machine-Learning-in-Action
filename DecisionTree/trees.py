@@ -1,4 +1,3 @@
-#coding:utf8
 from math import log
 
 def calcShannonEnt(dataSet):
@@ -122,7 +121,7 @@ def classify(inputTree, featLabels, testVec):
     :param testVec: 测试样例
     :return: 类别
     """
-    firstStr = inputTree.keys()[0]
+    firstStr = list(inputTree.keys())[0]
     secondDict = inputTree[firstStr]
     featIndex = featLabels.index(firstStr)
     for key in secondDict.keys():
@@ -156,8 +155,9 @@ def grabTree(filename):
     return pickle.load(fr)
 
 if __name__ == '__main__':
-    dataSet, labels = read2DataSet('lenses.txt')
+    dataSet, labels = read2DataSet("./lenses.txt")
     label = labels[:]
     myTree = createTree(dataSet,label)
     predict = classify(myTree,labels,['pre','myope','no','normal'])
+    print(myTree)
     print(predict)
