@@ -1,5 +1,5 @@
-#!/bin/usr/env python3
-#coding:utf8
+#!/usr/bin/python3
+#coding: utf-8
 from numpy import *
 
 class treeNode():
@@ -10,27 +10,26 @@ class treeNode():
         leftBranch = left
 
 def loadDataSet(filename):
-    dataMat = []
-    with open(filename) as fr:
-        for line in fr.readlines():
-            curLine = line.strip().split('\t')
-            fltLine = map(float, curLine) # 将curLine列表中的元素，变成float类型；返回list
+	dataMat = []
+	with open(filename) as fr:
+		for line in fr.readlines():
+			curLine = line.strip().split('\t')
+			fltLine = list(map(float, curLine)) # 将curLine列表中的元素，变成float类型；返回list
             # map(function, sequence[, sequence, ...]) -> list 将function应用到可迭代对象的组成元素上，返回list
-            dataMat.append(fltLine)
-    return dataMat
+			dataMat.append(fltLine)
+	return dataMat
 
 def binSplitDataSet(dataSet, feature, value):
-    mat0 = dataSet[nonzero(dataSet[:,feature] > value)[0], :][0]
-    # print (nonzero(dataSet[:,feature] > value))
-    mat1 = dataSet[nonzero(dataSet[:,feature] <= value)[0], :][0]
+	mat0 = dataSet[nonzero(dataSet[:,feature] > value)[0], :]
+	mat1 = dataSet[nonzero(dataSet[:,feature] <= value)[0], :]
     # 解释一下：
     # dataSet[nonzero(dataSet[:,feature] > value)[0], :][0]
     # nonzero(dataSet[:,feature] > value)[0] 返回两个维度上的结果，现在只取行维度上，满足条件的结果；得到满足条件的行坐标
     # 然后依据得到的结果对数据集进行裁剪，划分；得到两个矩阵 a，b
-    return mat0, mat1
+	return mat0, mat1
 
 def regLeaf(dataSet):
-    return mean(dataSet[:, -1])
+	return mean(dataSet[:, -1])
 
 def regErr(dataSet):
     # 总方差作为误差
@@ -51,6 +50,7 @@ def linearSolve(dataSet):
 		raise NameError('This matrix is singular, cannot do inverse\n'
 						'try increasing the second value of ops')
 	ws = xTx.I * (X.T * Y)
+	print(shape(ws))
 	return ws, X, Y
 
 def modelLeaf(dataSet):
@@ -92,7 +92,8 @@ def chooseBestSplit(dataSet, leafType=regLeaf, errorType=regErr, ops=(1,4)):
 	bestS = inf; bestIndex = 0; bestValue = 0
 	# 遍历所有特征及其所有的取值来找到使误差最小化的切分阈值；
 	for featIndex in range(n-1): # 遍历所有特征；
-		for splitVal in set(dataSet[:, featIndex]): # 遍历该特征的所有可能取值；
+		uniqueValues = set(dataSet[:, featIndex].T.tolist()[0])
+		for splitVal in uniqueValues: # 遍历该特征的所有可能取值；
 			mat0, mat1 = binSplitDataSet(dataSet, featIndex, splitVal)
 			if (shape(mat0)[0] < tolN) or (shape(mat1)[0] < tolN): # 待切分的数据集的样本数必须 大于tolN（切分最小样本数）
 				continue
@@ -144,7 +145,7 @@ def isTree(obj):
 
 def getMean(tree):
 	"""
-	对树进行塌陷处理（即返回树的平均值）；从上到下遍历树直到叶节点为止，找到两个叶节点，则计算平均值；
+	对树进行塌陷处理（即返回树的平均值）；从上到下遍历树直到叶节点为止，找到两个叶节点，则计算平均值；最终递归到一棵树的平均值
 	:param tree: 
 	:return: 
 	"""
@@ -154,23 +155,32 @@ def getMean(tree):
 		tree['right'] = getMean(tree['right'])
 	return (tree['left']+tree['right'])/2.0
 
+#树剪枝：
+#伪代码
+#基于已有的树切分测试数据：
+#     如果存在任一子集是一棵树，则在该子集上递归剪枝;
+#     计算将当前两个[叶节点]合并后的误差
+#     计算不合并的误差
+#     如果合并的误差会降低的话，就将叶节点合并
+
 def prune(tree, testData):
 	if shape(testData)[0] == 0:# 测试集没有数据，进行塌陷处理
 		return getMean(tree)
-	if (isTree(tree['left']) or isTree(tree['right'])):
+	if (isTree(tree['left']) or isTree(tree['right'])):#决策树有分叉,需要对测试数据进行子集划分
 		lSet, rSet = binSplitDataSet(testData, tree['spInd'],tree['spVal'])
-	# 递归处理子树
+	# 递归处理子树:需要在子树上,进行剪枝处理.
 	if isTree(tree['left']): tree['left'] = prune(tree['left'],lSet)
 	if isTree(tree['right']): tree['right'] = prune(tree['right'], rSet)
 	# 到达叶子节点
 	if not isTree(tree['left']) and not isTree(tree['right']):
+		#得到两个叶子节点上的数据子集,方便计算误差
 		lSet, rSet = binSplitDataSet(testData, tree['spInd'], tree['spVal'])
 		#未剪枝误差：
 		errorNoMerge = sum(power(lSet[:,-1]-tree['left'], 2)) + \
 			sum(power(rSet[:,-1]-tree['right'], 2))
 		# 剪枝后误差：
-		treeMean = (tree['left']+tree['right'])/2.0 # 取平均值
-		errorMerge = sum(power(testData[:,-1] - treeMean, 2))
+		treeMean = (tree['left']+tree['right'])/2.0 # 预测值取平均值
+		errorMerge = sum(power(testData[:,-1] - treeMean, 2))#合并后总误差
 		if errorMerge < errorNoMerge:# 合并后，误差减小，--合并；merge
 			print ("merging")
 			return treeMean
@@ -181,10 +191,10 @@ def prune(tree, testData):
 
 def regTreeEVal(model, inDat):
 	"""
-	点回归树，返回浮点数
+	回归树，返回叶子节点表示的浮点数
 	:param model: 
 	:param inDat: 单个数据点，一个行向量；
-	:return: 一个浮点数
+	:return: 叶子节点浮点数
 	"""
 	return float(model)
 
@@ -198,6 +208,8 @@ def modelTreeEval(model, inDat):
 	n = shape(inDat)[1]
 	X = mat(ones((1, n+1)))
 	X[:, 1:n+1] = inDat # 格式化，第一列为1
+	print(shape(model))
+	print(shape(X))
 	return float(X * model)
 
 def treeForeCast(tree, inData, modelEval=regTreeEVal):
