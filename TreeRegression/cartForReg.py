@@ -21,7 +21,7 @@ def regLeaf(dataset):
     # 叶子节点:取平均值
     return np.mean(dataset[:,-1])
 
-def modelLeaf(dataset):
+def linearSolve(dataset):
     # 模型树叶子节点---线性方程
     m, n = np.shape(dataset)
     # X 中包含一个全1列. 对应W参数中的偏置参数b
@@ -33,17 +33,20 @@ def modelLeaf(dataset):
     #判断是否可逆[奇异矩阵]
     if np.linalg.det(xTx) == 0.0:
         raise NameError("奇异矩阵, 矩阵不可逆,尝试修改参数")
-    W = (xTx).I * (X.T * y)
-    print(np.shape(W))
+    W = xTx.I * (X.T * y)
 
     return X, y, W
+
+def modelLeaf(dataset):
+    X, y, W = linearSolve(dataset)
+    return W
 
 def regErr(dataset):
     return np.var(dataset[:,-1]) * np.shape(dataset)[0]
 
 def modelErr(dataset):
     # 模型树的误差函数
-    X, y, W = modelLeaf(dataset)
+    X, y, W = linearSolve(dataset)
     yHat = X*W
 
     return sum(np.power(yHat-y, 2))
@@ -52,7 +55,6 @@ def chooseBestSplit(dataset, leafType=regLeaf, errorType=regErr, ops=(1,4)):
     """
 	选择合适的数据的最佳二元切分方法，当chooseBestSplit函数确定不再对数据进行切分时，生成叶子节点；
 	找到“好”的切分方式时，返回切分特征编号和切分特征值。
-	:param dataSet: 数据集
 	:param leafType: 生成叶子节点；当chooseBestSplit函数确定不再对数据进行切分时，生成叶子节点；
 	:param errorType: 误差函数计算方式---切分方式的评价指标；
 	:param ops: 其他参数，用于控制函数的停止时机：tolS 容许的误差下降值， tolN 切分的最少样本数；
@@ -60,7 +62,7 @@ def chooseBestSplit(dataset, leafType=regLeaf, errorType=regErr, ops=(1,4)):
 	"""
     tolS = ops[0]; tolN = ops[1]
     # 如果,节点上所有值都相等,直接返回叶子节点
-    y = dataset[:-1].T.tolist()[0]
+    y = dataset[:, -1].T.tolist()[0]
     if len(set(y)) == 1:
         return None, leafType(dataset)
     # 其他情况,找出最佳特征, 特征值
@@ -157,8 +159,7 @@ def modelPredBase(ws, inDat):
     n = np.shape(inDat)[1]
     X = np.mat(np.ones((1, n+1)))
     X[:, 1:n+1] = inDat # 格式化，第一列为1
-    print(np.shape(ws))
-    print(np.shape(X))
+
     return float(X * ws)
 
 # 单条数据
