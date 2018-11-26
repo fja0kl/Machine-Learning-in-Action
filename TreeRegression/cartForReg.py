@@ -206,8 +206,8 @@ def loadDataSet(filename):
 
 def testTreeEval():
 	# 通过计算预测结果与标签值之间的相关系数，来评价模型的好坏；
-    trainMat = np.mat(loadDataSet('bikeSpeedVsIq_train.txt'))
-    testMat = np.mat(loadDataSet('bikeSpeedVsIq_test.txt'))
+    trainMat = np.mat(loadDataSet('./data/bikeSpeedVsIq_train.txt'))
+    testMat = np.mat(loadDataSet('./data/bikeSpeedVsIq_test.txt'))
 	
     regTree = createTree(trainMat, ops=(1,20))
     yHat = dataPredict(regTree, testMat[:,0])

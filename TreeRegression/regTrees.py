@@ -248,12 +248,12 @@ def createForeCast(tree, testData, modelEval=regTreeEVal):
 	return yHat
 
 def testTreeReg():
-	myDat2 = loadDataSet('ex2.txt')
+	myDat2 = loadDataSet('./data/ex2.txt')
 	print ('树回归')
 	myMat = mat(myDat2)
 	tree = createTree(myMat, ops=(1000, 4))
 	print (tree)
-	myTestData = loadDataSet('ex2test.txt')
+	myTestData = loadDataSet('./data/ex2test.txt')
 	myMat2Test = mat(myTestData)
 	pruneTree = prune(tree, myMat2Test)
 	print (pruneTree)
@@ -263,8 +263,8 @@ def testTreeEval():
 	通过计算预测结果与标签值之间的相关系数，来评价模型的好坏；
 	:return: 
 	"""
-	trainMat = mat(loadDataSet('bikeSpeedVsIq_train.txt'))
-	testMat = mat(loadDataSet('bikeSpeedVsIq_test.txt'))
+	trainMat = mat(loadDataSet('./data/bikeSpeedVsIq_train.txt'))
+	testMat = mat(loadDataSet('./data/bikeSpeedVsIq_test.txt'))
 	myTree = createTree(trainMat, ops=(1,20))
 	yHat = createForeCast(myTree, testMat[:,0])
 	cor = corrcoef(yHat, testMat[:, 1],rowvar=0)[0,1]

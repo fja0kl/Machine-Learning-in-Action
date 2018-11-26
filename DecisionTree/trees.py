@@ -190,7 +190,7 @@ def grabTree(filename):
     return pickle.load(fr)
 
 if __name__ == '__main__':
-    dataSet, labels = read2DataSet("./lenses.txt")
+    dataSet, labels = read2DataSet("./data/lenses.txt")
     label = labels[:]
     myTree = createTree(dataSet,label,'gaininforadio')
     predict = classify(myTree,labels,['pre','myope','no','normal'])

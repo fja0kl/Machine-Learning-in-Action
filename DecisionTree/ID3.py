@@ -177,7 +177,7 @@ def read2DataSet(filename):
 
 
 if __name__ == "__main__":
-    dataSet, labels = read2DataSet("./lenses.txt")
+    dataSet, labels = read2DataSet("./data/lenses.txt")
     label = labels[:]#防止后面的操作影响原始数据
     id3 = ID3()
     myTree = id3.createDTree(dataSet,label)
