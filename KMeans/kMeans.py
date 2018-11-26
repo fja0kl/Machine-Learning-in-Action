@@ -78,7 +78,7 @@ def kMeans(dataSet, k, distMeas=distEclud, createCent=randCent):
 			if clusterAssment[i, 0] != minIndex: # 判断簇分配结果是否需要改变
 				clusterChanged = True
 			clusterAssment[i, :] = minIndex, minDist**2 # 分配簇：下标，距离平方；
-		print centroids # 输出质心变化过程
+		# print centroids# 输出质心变化过程
 		for cent in range(k): # 更新质心位置；取分配后簇的均值---数组筛选；
 			ptsInClust = dataSet[nonzero(clusterAssment[:,0].A==cent)[0]]# 取行方向
 			centroids[cent,:] = mean(ptsInClust, axis=0) # 更新质心位置；
@@ -128,10 +128,11 @@ def biKmeans(dataSet, k, distMeas=distEclud):
 
 
 if __name__ == '__main__':
-	dataSet = mat(loadDataSet('testSet.txt'))
-	centList, clusterAssments = biKmeans(dataSet, 3)
+	dataSet = mat(loadDataSet('./data/testSet.txt'))
+	centList, clusterAssments = kMeans(dataSet, 3)
 	print ("#"*64)
 	# print centList
 	print ('#'*64)
 	print clusterAssments
 
+	
