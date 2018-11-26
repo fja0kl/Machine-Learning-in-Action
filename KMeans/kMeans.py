@@ -107,7 +107,7 @@ def biKmeans(dataSet, k, distMeas=distEclud):
 			centroidMat, splitClustAss = kMeans(ptsInCurrCluster, 2, distMeas) # 在给定簇上进行K-均值聚类（k=2）
 			sseSplit = sum(splitClustAss[:, 1]) # 计算将簇一分为二之后的总误差；
 			sseNotSplit = \
-				sum(clusterAssment[nonzero(clusterAssment[:, 0].A == i)[0], 1]) # 划分之前的总误差；
+				sum(clusterAssment[nonzero(clusterAssment[:, 0].A != i)[0], 1]) # 划分之前的总误差；
 			print ("sseSplit, and notSplit : %d, %d" % (sseSplit, sseNotSplit))
 			if (sseSplit + sseNotSplit) < lowestSSE: # find 误差最小的簇的划分方式
 				bestCentToSplit = i
@@ -122,6 +122,7 @@ def biKmeans(dataSet, k, distMeas=distEclud):
 		centList[bestCentToSplit] = bestNewCents[0, :] # 使用最佳划分簇的新簇中心更新原始簇中心
 		centList.append(bestNewCents[1, :]) # 添加新的划分簇
 		# 更新划分簇结果；
+		print bestClustAss
 		clusterAssment[nonzero(clusterAssment[:, 0].A == bestCentToSplit)[0], :] = bestClustAss
 	return centList, clusterAssment
 
@@ -130,7 +131,7 @@ if __name__ == '__main__':
 	dataSet = mat(loadDataSet('testSet.txt'))
 	centList, clusterAssments = biKmeans(dataSet, 3)
 	print ("#"*64)
-	print centList
+	# print centList
 	print ('#'*64)
 	print clusterAssments
 
