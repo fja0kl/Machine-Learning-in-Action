@@ -82,7 +82,7 @@ def distSLC(vecA, vecB):
 
 def clusterClubs(numClust=5):
 	datList = []
-	for line in open('places.txt').readlines():
+	for line in open('./data/places.txt').readlines():
 		lineArr = line.split('\t')
 		datList.append([float(lineArr[4]), float(lineArr[3])])
 	datMat = mat(datList)
