@@ -124,7 +124,7 @@ def plotROC(predStrengths, classLabels):
     print ("the Area Under the Curve is: %f" % float(ySum*xStep))#AUC：ROC曲线下的面积；；；计算方法，像微积分
 
 if __name__ == '__main__':
-    dataMat, labelMat = loadDataSet('horseColicTraining2.txt')
+    dataMat, labelMat = loadDataSet('./data/horseColicTraining2.txt')
     weakClfArr,aggClassEst = adaBoostTrainDS(dataMat,labelMat,100)
     # testDataMat, testLabelMat = loadDataSet('horseColicTest2.txt')
     # weakClfArr, aggClassEst = adaBoostTrainDS(testDataMat, testLabelMat, 100)
