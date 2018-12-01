@@ -1,4 +1,4 @@
-#coding:utf8
+#coding:utf-8
 from numpy import *
 
 def loadDataSet(filename):
@@ -135,4 +135,3 @@ if __name__ == '__main__':
 	print ('#'*64)
 	print clusterAssments
 
-	
