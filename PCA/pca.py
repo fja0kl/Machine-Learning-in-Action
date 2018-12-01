@@ -12,7 +12,7 @@ def pca(dataMat, topNfeat=9999999):
     meanRemoved = dataMat - meanVals # 1. 去除平均值
     covMat = cov(meanRemoved, rowvar=0) # 2. 计算协方差矩阵
     eigVals, eigVects = linalg.eig(mat(covMat)) # 计算协方差矩阵的特征值和特征向量
-    eigValInd = argsort(eigVals) # 3. 将特征值从大到小排序
+    eigValInd = argsort(eigVals) # 3. 将特征值从小到大排序
     eigValInd = eigValInd[:-(topNfeat+1):-1] # 保留最上面的N个特征值；
     redEigVects = eigVects[:, eigValInd]
     lowDDataMat = meanRemoved * redEigVects # 将数据转换到上述N个特征向量构建的新空间中；
@@ -24,4 +24,5 @@ if __name__ == '__main__':
     dataMat = dataMat.reshape(1000, 1000)
     lowDDataMat, reconMat = pca(dataMat, 1)
     print(lowDDataMat.shape)
+    print(sum(power(dataMat-reconMat, 2))/shape(dataMat)[0])
 
