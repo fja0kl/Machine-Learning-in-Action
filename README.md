@@ -7,3 +7,6 @@
 
 1: [kMeans聚类]kMeans聚类算法分析以及python3代码实现.具体分析请参考博客:
 [Click Me](http://fja0kl.coding.me/2018/11/26/kMeans%E8%81%9A%E7%B1%BB/)
+
+2: [PCA]PCA主成分分析原理及其代码实现.具体分析请参考博客:
+[Click Me](https://fja0kl.github.io/2018/12/02/PCA%E5%8E%9F%E7%90%86%E5%8F%8A%E5%AE%9E%E7%8E%B0/#more)
