@@ -1,4 +1,4 @@
-#coding:utf8
+#coding:utf-8
 import matplotlib.pyplot as plt
 import numpy as np
 import random
@@ -227,7 +227,7 @@ def crossValidation(xArr, yArr, numVal=10):
     print (-1*sum(np.multiply(meanX,unReg)) + np.mean(yMat))
 
 def originDataPlot():
-    xArr, yArr = loadDataSet('ex0.txt')
+    xArr, yArr = loadDataSet('./data/ex0.txt')
     xMat = np.mat(xArr)
 
     fig = plt.figure()
@@ -241,7 +241,7 @@ def standRegresPlot():
     通过画图，查看其分类效果。
     :return:
     """
-    xArr, yArr = loadDataSet('ex0.txt')
+    xArr, yArr = loadDataSet('./data/ex0.txt')
     ws = standRegres(xArr,yArr)
     print np.shape(ws)
     xMat = np.mat(xArr)
@@ -265,7 +265,7 @@ def standRegresPlot():
 # 折线图：根据x，y坐标，依次连接，形成！
 # so，最好根据对应关系，排序，对排序后的结果进行画图。
 def lwlrTestPlot():
-    xArr, yArr = loadDataSet('ex0.txt')
+    xArr, yArr = loadDataSet('./data/ex0.txt')
     yHat = lwlrTest(xArr, xArr, yArr, 0.003)
     xMat = np.mat(xArr)
 
@@ -280,7 +280,7 @@ def lwlrTestPlot():
     plt.show()
 
 def stageWiseTestPlot():
-    xArr, yArr = loadDataSet('abalone.txt')
+    xArr, yArr = loadDataSet('./data/abalone.txt')
     ws = stageWise(xArr, yArr, 0.001, 2)
     plt.plot(ws)
     plt.show()
@@ -288,7 +288,7 @@ def stageWiseTestPlot():
 
 
 if __name__ == '__main__':
-    xArr, yArr = loadDataSet('abalone.txt')
+    xArr, yArr = loadDataSet('./data/abalone.txt')
     crossValidation(xArr,yArr)
 
 
