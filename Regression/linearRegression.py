@@ -1,5 +1,5 @@
 #coding:utf-8
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import numpy as np
 import random
 
@@ -147,7 +147,7 @@ def ridgeTest(xArr,yArr,numTestPts = 30):
 
     wMat = np.zeros((numTestPts,np.shape(xMat)[1]))#设置ws数组；lam个数 * 特征数
     for i in range(numTestPts):
-        ws = ridgeRegres(xMat,yMat,np.exp(i-10)) #lambda 逐渐衰减
+        ws = ridgeRegres(xMat,yMat,np.exp(i-10)) #lambda 逐渐变化
         wMat[i,:] = ws.T
     return wMat
 
@@ -167,6 +167,7 @@ def stageWise(xArr,yArr,eps=0.005,numIt=100):
     wsMax = ws.copy()
     for i in range(numIt):# 每次迭代
         lowestError = np.inf #当前最小误差为正无穷
+        #所有特征的一次循环,仅仅修改了一个特征对应的系数
         for j in range(n): # 每个特征
             for sign in [-1,1]: #增大 or 缩小
                 wsTest = ws.copy() #防止改变ws矩阵
@@ -289,6 +290,7 @@ def stageWiseTestPlot():
 
 if __name__ == '__main__':
     xArr, yArr = loadDataSet('./data/abalone.txt')
-    crossValidation(xArr,yArr)
+    wsMat = stageWise(xArr,yArr)
+    print(wsMat)
 
 
