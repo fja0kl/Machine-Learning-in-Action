@@ -57,7 +57,7 @@ def datingClassTest():
     :return: 误分率
     """
     hoRatio = 0.10#测试数据所占的比例---将数据集按照1:9的比例划分，1是测试集；9是训练集
-    datingDataMat,datingLabels = file2Matrix('datingTestSet2.txt')
+    datingDataMat,datingLabels = file2Matrix('./data/datingTestSet2.txt')
     normMat,ranges,minVals = autoNorm(datingDataMat)
     m = normMat.shape[0]#数据集总数
     numTestVecs = int(m*hoRatio)#测试集数目
@@ -83,7 +83,7 @@ def classifyPerson():
     ffMiles = float(raw_input("frequent flier miles earned per year?"))
     iceCream = float(raw_input("liters of ice cream consumed per year?"))
 
-    datingDataMat,datingLabels = file2Matrix("datingTestSet2.txt")
+    datingDataMat,datingLabels = file2Matrix("./data/datingTestSet2.txt")
     normMat,ranges,minVals = autoNorm(datingDataMat)
 
     inArr = array([ffMiles,percentTats,iceCream])
@@ -102,7 +102,7 @@ def classifyPerson1():
     ffMiles = float(raw_input("每月工资有多少?"))
     iceCream = float(raw_input("每年消耗的冰淇淋有多少升?"))
 
-    datingDataMat,datingLabels = file2Matrix("datingTestSet2.txt")
+    datingDataMat,datingLabels = file2Matrix("./data/datingTestSet2.txt")
     normMat,ranges,minVals = autoNorm(datingDataMat)
 
     inArr = array([ffMiles,percentTats,iceCream])

@@ -11,7 +11,7 @@ def classify0(inX, dataSet, labels, k):
     dataSetSize = dataSet.shape[0]
     diffMat = tile(inX,(dataSetSize,1)) - dataSet#tile：将inx扩展，扩展后的形状为（dataSetSize，1）；然后进行运算；；；；目的是通过矩阵来，加快运算速度
     sqDiffMat = diffMat ** 2
-    sqDiffMat = sqDiffMat.sum(axis=1)#按列求和
+    sqDiffMat = sqDiffMat.sum(axis=1)#按行求和
     distances = sqDiffMat ** 0.5
     sortedDistIndicies = distances.argsort()#numpy argsort函数返回的是数组值从小到大的索引值
     print sortedDistIndicies
