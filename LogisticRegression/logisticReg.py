@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 
 def loadDataSet():
     dataMat = []; labelMat = []
-    fr = open('testSet.txt','r')
+    fr = open('./data/testSet.txt','r')
     for line in fr.readlines():
         line = line.strip().split()
         dataMat.append([1.0, float(line[0]), float(line[1])])
