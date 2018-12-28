@@ -5,7 +5,7 @@
 2. 给予求解的频繁项集挖掘满足最小置信度的关联规则。
 """
 def loadDataSet():
-	return [[1,3,4,6],[2,3,5,6],[1,2,3,5,6],[2,5,1,6]]
+	return [[1,3,4,],[2,3,6],[1,2,3,5,6],[2,5,1,6]]
 
 def createC1(dataSet):
 	"""
@@ -112,10 +112,12 @@ def generateRules(L, supportData, minConf=0.7):
 	for i in range(1, len(L)): # 过滤掉1频繁项集；
 		for freqSet in L[i]:
 			H1 = [frozenset([item]) for item in freqSet] # 频繁项集的单个元素列表；
-			if (i > 1):
-				rulesFromConseq(freqSet, H1, supportData, bigRulesList, minConf)
-			else: # i = 1；频繁二项集；直接计算置信度；
-				calcConf(freqSet, H1, supportData, bigRulesList, minConf)
+			rulesFromConseq(freqSet, H1, supportData, bigRulesList, minConf)
+			# if (i > 1):
+			# 	H1 = calcConf(freqSet, H1, supportData, bigRulesList, minConf)
+			# 	rulesFromConseq(freqSet, H1, supportData, bigRulesList, minConf)
+			# else: # i = 1；频繁二项集,不涉及右边元素再次组合;直接计算置信度；
+			# 	calcConf(freqSet, H1, supportData, bigRulesList, minConf)
 	return bigRulesList
 
 def calcConf(freqSet, H, supportData, brl, minConf=0.7):
@@ -151,9 +153,12 @@ def rulesFromConseq(freqSet, H, supportData, brl, minConf=0.7):
 	:return: 
 	"""
 	m = len(H[0])
-	if (len(freqSet) > (m+1)): # 判断当前频繁项集能否移除 大小为m的 子集；
-		Hmp1 = aprioriGen(H, m+1) # 由当前频繁项集单元素列表，生成所有的2元素列表（可能出现在规则右边）；
-		Hmp1 = calcConf(freqSet, Hmp1, supportData, brl, minConf)
+	if (len(freqSet) > m): # 判断当前频繁项集能否移除 大小为m的 子集；
+		prunedTails = calcConf(freqSet, H, supportData, brl, minConf)
+		if(len(prunedTails) > 1):# 满足条件的规则 多余一条；判断是否可以再次组合；
+			nextTails = aprioriGen(H, m+1) # 由当前频繁项集单元素列表，生成所有的m+1元素列表（可能出现在规则右边）；
+			print(nextTails)
+			rulesFromConseq(freqSet,nextTails,supportData,brl,minConf)
 		# 筛选后，满足条件的可以出现在规则右边的 元素列表；
 		# 通过下面的筛选，实现：
 		# 如果某条规则并不满足最小可信度要求，那么该规则的所有子集也不会满足最小可信度要求；
@@ -162,18 +167,18 @@ def rulesFromConseq(freqSet, H, supportData, brl, minConf=0.7):
 		# 这样，可以只计算：
 		# 满足最小可信度要求的，所有子集也满足最小置信度；从而，生成所有的关联规则；
 		# yeah
-		if (len(Hmp1)>1): # 满足条件的规则 多余一条；判断是否可以再次组合；
-			rulesFromConseq(freqSet, Hmp1, supportData, brl, minConf)
+		
 
 if __name__ == '__main__':
 	dataSet = loadDataSet()
 	C1 = createC1(dataSet)
 	print C1
+	print(type(C1))
 	retList, supportData = apriori(dataSet, 0.5)
-	print retList
-	print ("#"*64)
-	print supportData
-	rules = generateRules(retList, supportData, minConf=0.5)
-	print ('#'*64)
-	print rules
+	# print retList
+	# print ("#"*64)
+	# print supportData
+	rules = generateRules(retList, supportData, minConf=0.6)
+	# print ('#'*64)
+	# print rules
 
